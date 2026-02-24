@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- 모바일 최적화 및 전체화면 지원 -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <!-- iOS / Android 앱 모드 지원 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>Mobile Clock</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: #000000;
+        color: #ffffff;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden; /* 스크롤 방지 */
+      }
+
+      .clock-container {
+        text-align: center;
+      }
+
+      /* 시계 숫자 스타일 */
+      .time {
+        font-size: min(25vw, 150px);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.05em;
+        font-variant-numeric: tabular-nums; /* 등폭 숫자 */
+      }
+
+      .blink {
+        font-size: 90px;
+        border-radius: 50%;
+        padding: 0px 15px 0px 5px;
+        position: relative;
+        opacity: 0.5;
+        top: -25px;
+      }
+
+      /* 초 표시 (약간 작게) */
+      .seconds {
+        font-size: min(12vw, 70px);
+        font-weight: 600;
+        color: #888888;
+        margin-left: 15px;
+      }
+
+      /* 하단 정보 한 줄 정렬 */
+      .info-row {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 15px; /* 각 요소 사이 간격 */
+      }
+
+      /* 날짜 스타일 */
+      .date {
+        font-size: min(5vw, 25px);
+        color: #b0b0b0;
+        font-weight: 500;
+      }
+
+      /* 날씨 스타일 */
+      .weather {
+        font-size: min(5vw, 25px);
+        color: #dddddd;
+        font-weight: 400;
+        display: none; /* 데이터 오기 전 숨김 */
+      }
+
+      /* 미세먼지 스타일 */
+      .aqi {
+        font-size: min(4vw, 20px);
+        color: #aaaaaa;
+        font-weight: 400;
+        display: none; /* 데이터 오기 전 숨김 */
+      }
+
+      /* 로딩 및 상태 텍스트용 */
+      .status {
+        margin-top: 15px;
+        font-size: 15px;
+        color: #666666;
+      }
+
+      .message {
+        position: absolute;
+        top: 15px;
+        width: 100vw;
+        text-align: center;
+        font-size: min(4vw, 18px);
+        color: #ffcc00; /* 황금빛 노란색 */
+        font-weight: 500;
+        opacity: 0.9;
+        cursor: pointer;
+      }
+
+      /* 언어 전환 버튼 (우하단 고정) */
+      .lang-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        font-size: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .lang-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 상단 메시지 (누르면 랜덤 갱신) -->
+    <div class="message" onclick="updateQuote()" title="눌러보세요!"></div>
+    <div class="clock-container">
+      <!-- 시간 표시부 -->
+      <div
+        class="time"
+        style="cursor: pointer"
+        title="누르면 12/24시간제 전환"
+        onclick="toggleTimeFormat()"
+      >
+        <span id="hours">00</span><span class="blink">:</span
+        ><span id="minutes">00</span
+        ><span class="seconds" id="seconds">00</span>
+      </div>
+      <!-- 날짜/날씨/미세먼지 한 줄 표시부 -->
+      <div class="info-row">
+        <!-- 날짜 표시부 -->
+        <div class="date" id="dateDisplay">2026년 01월 01일 (월)</div>
+      </div>
+      <div class="info-row">
+        <!-- 날씨 표시부 -->
+        <div class="weather" id="weatherDisplay"></div>
+        <!-- 미세먼지 표시부 -->
+        <div class="aqi" id="aqiDisplay"></div>
+      </div>
+      <div class="status" id="statusDisplay">로딩 중...</div>
+
+      <!-- 화면 전환 아이콘 -->
+      <button
+        class="lang-btn"
+        onclick="toggleLang()"
+        title="한/영/숨김 모드 전환"
+      >
+        🌐
+      </button>
+    </div>
+
+    <script>
+      // 0: 한글, 1: 영문, 2: 안보임
+      var langMode = 0;
+      var is12Hour = true; // true: 12시간제, false: 24시간제
+      var weatherData = null;
+      var aqiData = null;
+
+      function renderWeather() {
+        var el = document.getElementById("weatherDisplay");
+        var statusEl = document.getElementById("statusDisplay");
+
+        if (langMode === 2) {
+          el.style.display = "none";
+          statusEl.textContent = "";
+          return;
+        }
+
+        if (!weatherData) {
+          statusEl.textContent =
+            langMode === 0
+              ? "날씨 정보를 읽어오는 중..."
+              : "Loading weather...";
+          el.style.display = "none";
+          return;
+        }
+        if (weatherData.error) {
+          statusEl.textContent =
+            langMode === 0 ? weatherData.error.ko : weatherData.error.en;
+          el.style.display = "none";
+          return;
+        }
+
+        el.textContent =
+          weatherData.current.icon + " " + weatherData.current.temp + "°C ";
+
+        el.style.display = "block";
+        statusEl.textContent = "";
+      }
+
+      function renderAQI() {
+        var el = document.getElementById("aqiDisplay");
+        var statusEl = document.getElementById("statusDisplay");
+
+        if (langMode === 2) {
+          el.style.display = "none";
+          statusEl.textContent = "";
+          return;
+        }
+
+        if (!aqiData) {
+          if (!statusEl.textContent || statusEl.textContent === "") {
+            statusEl.textContent =
+              langMode === 0
+                ? "미세먼지 정보를 읽어오는 중..."
+                : "Loading AQI...";
+          }
+          el.style.display = "none";
+          return;
+        }
+        if (aqiData.error) {
+          statusEl.textContent =
+            langMode === 0 ? aqiData.error.ko : aqiData.error.en;
+          el.style.display = "none";
+          return;
+        }
+        var aqiIcon = "😄";
+        if (aqiData.todayMax > 40) aqiIcon = "😷";
+        if (aqiData.todayMax > 80) aqiIcon = "🤢";
+        if (aqiData.todayMax > 100) aqiIcon = "👿";
+        el.textContent =
+          "PM2.5 😷 " +
+          aqiData.current +
+          " " +
+          aqiIcon +
+          " " +
+          aqiData.todayMax;
+        el.style.display = "block";
+        statusEl.textContent = "";
+      }
+
+      function toggleLang() {
+        langMode = (langMode + 1) % 3;
+        updateClock();
+        renderWeather();
+        renderAQI();
+        updateQuote();
+      }
+
+      function toggleTimeFormat() {
+        is12Hour = !is12Hour;
+        updateClock();
+      }
+
+      function updateClock() {
+        var now = new Date();
+
+        // 시간 추출
+        var h = now.getHours();
+        var m = now.getMinutes();
+        var s = now.getSeconds();
+
+        // 매 초마다 색상 변경 (밝은 색 계열)
+        var colors = [
+          "#FF80AB",
+          "#EA80FC",
+          "#8C9EFF",
+          "#80D8FF",
+          "#A7FFEB",
+          "#CCFF90",
+          "#FFFF8D",
+          "#FFD180",
+        ];
+        document.getElementsByClassName("time")[0].style.color =
+          colors[s % colors.length];
+
+        // 2자리 숫자로 포맷
+        if (is12Hour) {
+          h = h % 12;
+          if (h === 0) {
+            h = 12; // 0시는 12시로 표시
+          }
+        }
+
+        h = h < 10 ? "0" + h : h;
+        m = m < 10 ? "0" + m : m;
+        s = s < 10 ? "0" + s : s;
+
+        // DOM 업데이트 (깜빡임 문제 없이 텍스트 노드만 변경)
+        document.getElementById("hours").textContent = h;
+        document.getElementById("minutes").textContent = m;
+        document.getElementById("seconds").textContent = s;
+
+        // 날짜 포맷팅
+        var year = now.getFullYear();
+        var month = now.getMonth() + 1;
+        var date = now.getDate();
+        var dayIndex = now.getDay();
+
+        // 영어 기준 요일 아이콘
+        var dayNames = [
+          "일요일",
+          "월요일",
+          "화요일",
+          "수요일",
+          "목요일",
+          "금요일",
+          "토요일",
+        ];
+        var dayNames_en = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ];
+
+        // 3모드 (안보임) 일때 날짜 영역 숨기기
+        var dateDisplayEl = document.getElementById("dateDisplay");
+        if (langMode === 2) {
+          dateDisplayEl.style.display = "none";
+          return; // 날짜 업데이트 조기 종료
+        } else {
+          dateDisplayEl.style.display = "block";
+        }
+
+        // 요일 색상 구하기 (일요일: 밝은 빨강, 토요일: 밝은 파랑, 평일: 초록)
+        var dayColor = "#52ff52";
+        if (dayIndex === 0) {
+          dayColor = "#ff5252";
+        } else if (dayIndex === 6) {
+          dayColor = "#4da8da";
+        }
+
+        // 전체 글자색 설정 초기화
+        dateDisplayEl.style.color = "";
+
+        if (langMode === 0) {
+          var dayName = dayNames[dayIndex];
+          // 0 채우기
+          month = month < 10 ? "0" + month : month;
+          date = date < 10 ? "0" + date : date;
+
+          dateDisplayEl.innerHTML =
+            year +
+            "년 " +
+            month +
+            "월 " +
+            date +
+            "일 <span style='color:" +
+            dayColor +
+            "'>" +
+            dayName +
+            "</span>";
+        } else if (langMode === 1) {
+          var dayNameEn = dayNames_en[dayIndex];
+          var monthNamesEn = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+          var mEn = monthNamesEn[now.getMonth()];
+
+          dateDisplayEl.innerHTML =
+            "<span style='color:" +
+            dayColor +
+            "'>" +
+            dayNameEn +
+            "</span>, " +
+            mEn +
+            " " +
+            now.getDate() +
+            ", " +
+            year;
+        }
+      }
+
+      function startClock() {
+        updateClock();
+        // 브라우저 딜레이를 방지하기 위해 다음 정확한 1초(0밀리초)가 되는 순간을 계산하여 예약
+        var now = new Date();
+        var msToNextSecond = 1000 - now.getMilliseconds();
+        setTimeout(startClock, msToNextSecond);
+      }
+
+      // 시계 구동 시작
+      startClock();
+
+      // --------------------------------------------------
+      // 현재 위치 기반 날씨 가져오기 (Open-Meteo API 사용)
+      // --------------------------------------------------
+      function getWeatherIcon(wmoCode) {
+        // WMO 날씨 코드(0~99)에 따라 이모지 반환
+        // 참고: https://open-meteo.com/en/docs
+        if (wmoCode === 0) return "☀️"; // 맑음
+        if (wmoCode === 1 || wmoCode === 2 || wmoCode === 3) return "⛅"; // 구름 조금~흐림
+        if (wmoCode === 45 || wmoCode === 48) return "🌫️"; // 안개
+        if (wmoCode >= 51 && wmoCode <= 67) return "🌧️"; // 비
+        if (wmoCode >= 71 && wmoCode <= 77) return "❄️"; // 눈
+        if (wmoCode >= 80 && wmoCode <= 82) return "🌦️"; // 소나기
+        if (wmoCode >= 85 && wmoCode <= 86) return "🌨️"; // 눈보라
+        if (wmoCode >= 95 && wmoCode <= 99) return "⛈️"; // 뇌우
+        return "☁️"; // 기본값
+      }
+
+      function fetchWeather(lat, lon) {
+        var url =
+          "https://api.open-meteo.com/v1/forecast?latitude=" +
+          lat +
+          "&longitude=" +
+          lon +
+          "&current_weather=true" +
+          "&daily=weathercode,temperature_2m_max,temperature_2m_min" +
+          "&timezone=auto" +
+          "&past_days=1" +
+          "&forecast_days=2";
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+              var response = JSON.parse(xhr.responseText);
+              var temp = response.current_weather.temperature;
+              var code = response.current_weather.weathercode;
+              var icon = getWeatherIcon(code);
+
+              var yMax = Math.round(response.daily.temperature_2m_max[0]);
+              var yIcon = getWeatherIcon(response.daily.weathercode[0]);
+
+              var tMax = Math.round(response.daily.temperature_2m_max[2]);
+              var tIcon = getWeatherIcon(response.daily.weathercode[2]);
+
+              weatherData = {
+                current: { icon: icon, temp: temp },
+                yesterday: { icon: yIcon, max: yMax },
+                tomorrow: { icon: tIcon, max: tMax },
+              };
+              renderWeather();
+            } catch (e) {
+              weatherData = { error: { ko: "날씨 오류", en: "Weather Error" } };
+              renderWeather();
+            }
+          } else if (xhr.readyState === 4) {
+            weatherData = {
+              error: {
+                ko: "날씨를 불러올 수 없습니다.",
+                en: "Cannot load weather.",
+              },
+            };
+            renderWeather();
+          }
+        };
+        xhr.send();
+      }
+
+      function updateQuote() {
+        var messageEl = document.querySelector(".message");
+        if (langMode === 2) {
+          messageEl.style.display = "none";
+          return;
+        }
+
+        var titles = [
+          "최고의 예쁜이는 ",
+          "최고의 스플래툰 유저는 ",
+          "최고의 못난이는 ",
+          "최고의 요리사는 ",
+          "최고의 방귀 대장은 ",
+        ];
+        var names = [
+          "윤은솔 입니다!",
+          "윤은솔 입니다!",
+          "이민정 입니다!",
+          "윤여정 입니다!",
+          "우리 모두 입니다!",
+        ];
+
+        // 매 호출마다 완전 랜덤으로 뽑기
+        var randTitle = titles[Math.floor(Math.random() * titles.length)];
+        var randName = names[Math.floor(Math.random() * names.length)];
+
+        var randomString = randTitle + randName;
+
+        messageEl.style.display = "block";
+        messageEl.textContent = randomString;
+      }
+
+      function updateWeather() {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              var lat = position.coords.latitude;
+              var lon = position.coords.longitude;
+              fetchWeather(lat, lon);
+            },
+            function (error) {
+              console.error("위치 정보 거부됨 또는 에러:", error);
+              weatherData = {
+                error: {
+                  ko: "위치 정보 접근 권한이 필요합니다.",
+                  en: "Location access required.",
+                },
+              };
+              renderWeather();
+            },
+          );
+        } else {
+          weatherData = {
+            error: {
+              ko: "위치 정보가 지원되지 않는 기기입니다.",
+              en: "Location not supported.",
+            },
+          };
+          renderWeather();
+        }
+      }
+
+      // 페이지 진입 시 날씨/미세먼지/운세 1회 업데이트 및 30분마다 갱신
+      updateWeather();
+      updateAQI();
+      updateQuote();
+      setInterval(function () {
+        updateWeather();
+        updateAQI();
+        updateQuote();
+      }, 1800000);
+      // 구버전 및 미지원 브라우저는 자연히 무시
+      // --------------------------------------------------
+      var wakeLock = null;
+      async function requestWakeLock() {
+        if ("wakeLock" in navigator) {
+          try {
+            wakeLock = await navigator.wakeLock.request("screen");
+
+            // 화면/탭 변경 후 돌아올 때 Lock이 풀리는 것 방지
+            document.addEventListener("visibilitychange", async function () {
+              if (wakeLock !== null && document.visibilityState === "visible") {
+                wakeLock = await navigator.wakeLock.request("screen");
+              }
+            });
+          } catch (err) {
+            console.log("Wake Lock Error:", err);
+          }
+        }
+      }
+      // 미세먼지
+      function updateAQI() {
+        var token = "c1611aa54ac7de2320cc3105b7b42a0ba2b26447";
+        // 'here'는 IP 기반으로 현재 위치를 자동으로 찾습니다.
+        var url = "https://api.waqi.info/feed/here/?token=" + token;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+              var response = JSON.parse(xhr.responseText);
+              if (response.status === "ok") {
+                var currentAqi = response.data.aqi;
+                var todayMax = "-";
+                var tomorrowMax = "-";
+
+                // 오늘 예보 (최고) 가져오기
+                if (
+                  response.data.forecast &&
+                  response.data.forecast.daily &&
+                  response.data.forecast.daily.pm25
+                ) {
+                  var forecasts = response.data.forecast.daily.pm25;
+                  var now = new Date();
+                  var year = now.getFullYear();
+                  var month = now.getMonth() + 1;
+                  var day = now.getDate();
+                  if (month < 10) month = "0" + month;
+                  if (day < 10) day = "0" + day;
+                  var todayStr = year + "-" + month + "-" + day;
+
+                  var tomorrow = new Date(now);
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  var tYear = tomorrow.getFullYear();
+                  var tMonth = tomorrow.getMonth() + 1;
+                  var tDay = tomorrow.getDate();
+                  if (tMonth < 10) tMonth = "0" + tMonth;
+                  if (tDay < 10) tDay = "0" + tDay;
+                  var tomorrowStr = tYear + "-" + tMonth + "-" + tDay;
+
+                  for (var i = 0; i < forecasts.length; i++) {
+                    if (forecasts[i].day === todayStr) {
+                      todayMax = forecasts[i].max;
+                    }
+                    if (forecasts[i].day === tomorrowStr) {
+                      tomorrowMax = forecasts[i].max;
+                    }
+                  }
+                }
+
+                aqiData = {
+                  current: currentAqi,
+                  todayMax: todayMax,
+                  tomorrowMax: tomorrowMax,
+                };
+                renderAQI();
+              }
+            } catch (e) {
+              console.log("AQI Error:", e);
+              aqiData = { error: { ko: "미세먼지 오류", en: "AQI Error" } };
+              renderAQI();
+            }
+          } else if (xhr.readyState === 4) {
+            aqiData = {
+              error: {
+                ko: "미세먼지를 불러올 수 없습니다.",
+                en: "Cannot load AQI.",
+              },
+            };
+            renderAQI();
+          }
+        };
+        xhr.send();
+      }
+    </script>
+  </body>
+</html>
