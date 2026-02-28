@@ -278,12 +278,22 @@
 
       /* 비밀번호 틀렸을 때 깜빡임 효과 */
       @keyframes pad-error-blink {
-        0%, 100% { background: rgba(0, 0, 0); }
-        50% { background: rgba(0, 0, 0); }
+        0%, 100% { background: rgba(0, 0, 0, 0.95); }
+        50% { background: rgba(255, 0, 0, 0.5); }
+      }
+      @keyframes pad-shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+      }
+      @-webkit-keyframes pad-shake {
+        0%, 100% { -webkit-transform: translateX(0); }
+        25% { -webkit-transform: translateX(-10px); }
+        75% { -webkit-transform: translateX(10px); }
       }
       .pad-error {
-        animation: pad-error-blink 0.3s ease-in-out;
-        -webkit-animation: pad-error-blink 0.3s ease-in-out;
+        animation: pad-error-blink 0.3s ease-in-out, pad-shake 0.3s ease-in-out;
+        -webkit-animation: pad-error-blink 0.3s ease-in-out, pad-shake 0.3s ease-in-out;
       }
 
       /* GIF 오버레이 스타일 */
@@ -299,6 +309,38 @@
       #gifOverlay img {
         max-width: 100%;
         max-height: 100%;
+      }
+
+      /* 무지개 방구 오버레이 스타일 */
+      #fartOverlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 4000;
+        justify-content: center;
+        align-items: center;
+        font-size: 150px;
+        overflow: hidden;
+      }
+      .rainbow-fart {
+        display: inline-block;
+        animation: fart-shake 0.1s infinite, rainbow-cycle 0.5s infinite linear;
+        -webkit-animation: fart-shake 0.1s infinite, rainbow-cycle 0.5s infinite linear;
+      }
+      @keyframes fart-shake {
+        0% { transform: translate(5px, 5px) scale(1); }
+        50% { transform: translate(-5px, -5px) scale(1.2); }
+        100% { transform: translate(5px, -5px) scale(1); }
+      }
+      @-webkit-keyframes fart-shake {
+        0% { -webkit-transform: translate(5px, 5px) scale(1); }
+        50% { -webkit-transform: translate(-5px, -5px) scale(1.2); }
+        100% { -webkit-transform: translate(5px, -5px) scale(1); }
+      }
+      @keyframes rainbow-cycle {
+        0% { filter: hue-rotate(0deg); -webkit-filter: hue-rotate(0deg); }
+        100% { filter: hue-rotate(360deg); -webkit-filter: hue-rotate(360deg); }
       }
     </style>
   </head>
@@ -374,6 +416,11 @@
     <!-- GIF 표시용 오버레이 -->
     <div id="gifOverlay">
       <img src="0.0.gif" alt="Special Event">
+    </div>
+
+    <!-- 무지개 방구 오버레이 -->
+    <div id="fartOverlay">
+      <div class="rainbow-fart">🌈💨</div>
     </div>
 
     <!-- 효과음 재생용 오디오 -->
@@ -896,7 +943,7 @@
         el.textContent = str;
       }
       function submitPad() {
-        if (currentPassword === "0409") {
+        if (currentPassword === "1402") {
           var gifOverlay = document.getElementById('gifOverlay');
           var sound = document.getElementById('successSound');
           
@@ -912,10 +959,16 @@
           }, 5000);
         } else {
           var pad = document.getElementById('passwordPad');
+          var fartOverlay = document.getElementById('fartOverlay');
+          
           pad.classList.add('pad-error');
+          fartOverlay.style.display = 'flex';
+          
           setTimeout(function() {
             pad.classList.remove('pad-error');
-          }, 300);
+            fartOverlay.style.display = 'none';
+          }, 1500); 
+          
           clearPad();
         }
       }
