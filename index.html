@@ -275,6 +275,31 @@
         justify-content: center;
         align-items: center;
       }
+
+      /* 비밀번호 틀렸을 때 깜빡임 효과 */
+      @keyframes pad-error-blink {
+        0%, 100% { background: rgba(0, 0, 0); }
+        50% { background: rgba(0, 0, 0); }
+      }
+      .pad-error {
+        animation: pad-error-blink 0.3s ease-in-out;
+        -webkit-animation: pad-error-blink 0.3s ease-in-out;
+      }
+
+      /* GIF 오버레이 스타일 */
+      #gifOverlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: #000;
+        z-index: 3000;
+        justify-content: center;
+        align-items: center;
+      }
+      #gifOverlay img {
+        max-width: 100%;
+        max-height: 100%;
+      }
     </style>
   </head>
   <body>
@@ -345,6 +370,14 @@
       </div>
       <div class="pad-btn action" style="margin-top: 20px; border: none; font-size: 16px; width: auto; height: auto;" onclick="togglePad(false)">닫기</div>
     </div>
+
+    <!-- GIF 표시용 오버레이 -->
+    <div id="gifOverlay">
+      <img src="0.0.gif" alt="Special Event">
+    </div>
+
+    <!-- 효과음 재생용 오디오 -->
+    <audio id="successSound" src="success.mp3" preload="auto"></audio>
 
     <script>
       // 0: 한글, 1: 영문, 2: 안보임
@@ -472,6 +505,15 @@
         h = h < 10 ? "0" + h : h;
         m = m < 10 ? "0" + m : m;
         s = s < 10 ? "0" + s : s;
+
+        // 10초마다 지진 효과 (sec % 10 === 0 일 때)
+        if (now.getSeconds() % 10 === 0) {
+          var content = document.getElementById('main-content');
+          content.classList.add('earthquake');
+          setTimeout(function() {
+            content.classList.remove('earthquake');
+          }, 500);
+        }
 
         // DOM 업데이트 (깜빡임 문제 없이 텍스트 노드만 변경)
         document.getElementById("hours").textContent = h;
@@ -822,15 +864,6 @@
         xhr.send();
       }
 
-      // 10초마다 지진 효과 (화면 흔들림)
-      setInterval(function() {
-        var content = document.getElementById('main-content');
-        content.classList.add('earthquake');
-        setTimeout(function() {
-          content.classList.remove('earthquake');
-        }, 500);
-      }, 10000);
-
       // --- 숫자 패드 로직 ---
       var currentPassword = "";
       function togglePad(show) {
@@ -842,9 +875,14 @@
         }
       }
       function inputPad(num) {
-        if(currentPassword.length < 8) {
+        if(currentPassword.length < 4) {
           currentPassword += num;
           updatePadDisplay();
+          
+          // 4자리가 입력되면 자동으로 제출
+          if(currentPassword.length === 4) {
+            submitPad();
+          }
         }
       }
       function clearPad() {
@@ -858,8 +896,28 @@
         el.textContent = str;
       }
       function submitPad() {
-        alert("입력된 비밀번호: " + currentPassword);
-        togglePad(false);
+        if (currentPassword === "0409") {
+          var gifOverlay = document.getElementById('gifOverlay');
+          var sound = document.getElementById('successSound');
+          
+          gifOverlay.style.display = 'flex';
+          if (sound) {
+            sound.currentTime = 0; // 재생 위치 초기화
+            sound.play();
+          }
+          togglePad(false);
+          
+          setTimeout(function() {
+            gifOverlay.style.display = 'none';
+          }, 5000);
+        } else {
+          var pad = document.getElementById('passwordPad');
+          pad.classList.add('pad-error');
+          setTimeout(function() {
+            pad.classList.remove('pad-error');
+          }, 300);
+          clearPad();
+        }
       }
     </script>
   </body>
