@@ -52,7 +52,7 @@
         font-size: min(30vw, 200px);
         font-weight: 800;
         line-height: 1;
-        letter-spacing: -0.05em;
+        letter-spacing: 0em;
         font-variant-numeric: tabular-nums; /* 등폭 숫자 */
       }
 
@@ -353,12 +353,10 @@
       <div
         class="time"
         style="cursor: pointer"
-        title="누르면 12/24시간제 전환"
-        onclick="toggleTimeFormat()"
       >
-        <span id="hours">00</span><span class="blink">:</span
-        ><span id="minutes">00</span
-        ><span class="seconds" id="seconds">00</span>
+        <span id="hours" title="누르면 12/24시간제 전환" onclick="toggleTimeFormat()">00</span><span class="blink">:</span
+        ><span id="minutes" title="누르면 폰트 크기 변경" onclick="toggleFontSize(event)">00</span
+        ><span class="seconds" id="seconds" title="누르면 폰트 변경" onclick="toggleFont(event)">00</span>
       </div>
       <!-- 날짜/날씨/미세먼지 한 줄 표시부 -->
       <div class="info-row">
@@ -512,6 +510,41 @@
         renderWeather();
         renderAQI();
         updateQuote();
+      }
+
+      var fontList = [
+        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+        'Georgia, serif',
+        '"Courier New", Courier, monospace',
+        '"Comic Sans MS", "Chalkboard SE", "Comic Neue", sans-serif',
+        'Impact, fantasy',
+        '"Times New Roman", Times, serif',
+        'Arial, Helvetica, sans-serif',
+        'Tahoma, Geneva, sans-serif',
+        '"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif',
+        'Verdana, Geneva, Tahoma, sans-serif'
+      ];
+      var currentFontIndex = 0;
+
+      function toggleFont(event) {
+        if(event) event.stopPropagation();
+        currentFontIndex = (currentFontIndex + 1) % fontList.length;
+        document.querySelector('.time').style.fontFamily = fontList[currentFontIndex];
+      }
+
+      var sizeList = [
+        'min(30vw, 200px)', // 기본 크기
+        'min(35vw, 240px)', // 약간 큼
+        'min(40vw, 280px)', // 더 큼
+        'min(20vw, 150px)', // 작음
+        'min(25vw, 180px)'  // 약간 작음
+      ];
+      var currentSizeIndex = 0;
+
+      function toggleFontSize(event) {
+        if(event) event.stopPropagation();
+        currentSizeIndex = (currentSizeIndex + 1) % sizeList.length;
+        document.querySelector('.time').style.fontSize = sizeList[currentSizeIndex];
       }
 
       function toggleTimeFormat() {
