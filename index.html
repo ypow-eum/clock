@@ -653,7 +653,7 @@
           date = date < 10 ? "0" + date : date;
 
           dateDisplayEl.innerHTML =
-            year +
+            "<span style='cursor:pointer;' title='누르면 새로고침' onclick='location.reload()'>" + year + "</span>" +
             "년 " +
             month +
             "월 " +
@@ -691,7 +691,7 @@
             " " +
             now.getDate() +
             ", " +
-            year;
+            "<span style='cursor:pointer;' title='Click to refresh' onclick='location.reload()'>" + year + "</span>";
         }
       }
 
