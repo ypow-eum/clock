@@ -47,15 +47,19 @@
 
       .clock-container {
         text-align: center;
+        position: relative;
+        top: -20px;
       }
 
       .time {
         font-size: min(30vw, 45vh, 200px);
         font-weight: 800;
-        line-height: 1;
+        line-height: 1.1;
         letter-spacing: 0em;
         font-variant-numeric: tabular-nums;
         cursor: pointer;
+        padding: 10px 20px;
+        white-space: nowrap;
       }
 
       .blink {
@@ -72,6 +76,9 @@
         font-weight: 600;
         color: #888888;
         margin-left: 15px;
+        display: inline-block;
+        padding-right: 15px;
+        padding-bottom: 5px;
       }
 
       .info-row {
@@ -130,23 +137,7 @@
         left: 20px;
       }
 
-      /* 지진 효과 */
-      @keyframes shake {
-        0% { transform: translate(1px, 1px) rotate(0deg); }
-        10% { transform: translate(-1px, -2px) rotate(-1deg); }
-        20% { transform: translate(-3px, 0px) rotate(1deg); }
-        30% { transform: translate(3px, 2px) rotate(0deg); }
-        40% { transform: translate(1px, -1px) rotate(1deg); }
-        50% { transform: translate(-1px, 2px) rotate(-1deg); }
-        60% { transform: translate(-3px, 1px) rotate(0deg); }
-        70% { transform: translate(3px, 1px) rotate(-1deg); }
-        80% { transform: translate(-1px, -1px) rotate(1deg); }
-        90% { transform: translate(1px, 2px) rotate(0deg); }
-        100% { transform: translate(1px, -2px) rotate(-1deg); }
-      }
-      .earthquake {
-        animation: shake 0.5s;
-      }
+
 
       /* 숫자 패드 */
       .number-pad-container {
@@ -342,10 +333,11 @@
           '"Space Mono", monospace'
         ],
         sizes: [
-          'min(30vw, 45vh, 200px)',
-          
-          'min(20vw, 30vh, 150px)',
-          'min(25vw, 38vh, 180px)'
+          'min(40vw, 50vh, 270px)',
+          'min(35vw, 45vh, 240px)',
+          'min(30vw, 40vh, 210px)',
+          'min(25vw, 35vh, 180px)',
+          'min(20vw, 30vh, 150px)'
         ],
         timeColors: [
           "#FF80AB", "#EA80FC", "#8C9EFF", "#80D8FF",
@@ -394,11 +386,7 @@
         DOM.minutes.textContent = m.toString().padStart(2, '0');
         DOM.seconds.textContent = s.toString().padStart(2, '0');
 
-        // 10초마다 지진 효과
-        if (s % 10 === 0) {
-          DOM.mainContent.classList.add('earthquake');
-          setTimeout(() => DOM.mainContent.classList.remove('earthquake'), 500);
-        }
+
       };
 
       const startClock = () => {
