@@ -2,13 +2,11 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <!-- 모바일 최적화 및 전체화면 지원 -->
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <meta name="theme-color" content="#000000" />
-    <!-- iOS / Android 앱 모드 지원 -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="manifest" href="manifest.json" />
@@ -17,6 +15,13 @@
       content="black-translucent"
     />
     <title>Mobile Clock</title>
+    <!-- 구글 웹폰트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@700&family=Nunito:wght@800&family=Orbitron:wght@700&family=Playfair+Display:ital,wght@1,700&family=Space+Mono:ital,wght@1,700&family=VT323&display=swap"
+      rel="stylesheet"
+    />
     <style>
       * {
         box-sizing: border-box;
@@ -24,10 +29,7 @@
         padding: 0;
       }
 
-      html {
-        background-color: #000000;
-      }
-
+      html,
       body {
         background-color: #000000;
         color: #ffffff;
@@ -40,20 +42,20 @@
         align-items: center;
         height: 100vh;
         height: 100dvh;
-        overflow: hidden; /* 스크롤 방지 */
+        overflow: hidden;
       }
 
       .clock-container {
         text-align: center;
       }
 
-      /* 시계 숫자 스타일 */
       .time {
-        font-size: min(30vw, 200px);
+        font-size: min(30vw, 45vh, 200px);
         font-weight: 800;
         line-height: 1;
         letter-spacing: 0em;
-        font-variant-numeric: tabular-nums; /* 등폭 숫자 */
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
       }
 
       .blink {
@@ -65,71 +67,45 @@
         top: -25px;
       }
 
-      /* 초 표시 (약간 작게) */
       .seconds {
-        font-size: min(12vw, 70px);
+        font-size: min(12vw, 18vh, 70px);
         font-weight: 600;
         color: #888888;
         margin-left: 15px;
       }
 
-      /* 하단 정보 한 줄 정렬 */
       .info-row {
         margin-top: 20px;
         display: flex;
         flex-direction: row;
         justify-content: center;
         align-items: center;
-        gap: 15px; /* 각 요소 사이 간격 */
+        gap: 15px;
       }
 
-      /* 날짜 스타일 */
-      .date {
-        font-size: min(5vw, 25px);
-        color: #b0b0b0;
-        font-weight: 500;
-      }
-
-      /* 날씨 스타일 */
-      .weather {
-        font-size: min(5vw, 25px);
-        color: #dddddd;
-        font-weight: 400;
-        display: none; /* 데이터 오기 전 숨김 */
-      }
-
-      /* 미세먼지 스타일 */
+      .weather,
       .aqi {
-        font-size: min(4vw, 20px);
-        color: #aaaaaa;
+        font-size: min(5vw, 25px);
         font-weight: 400;
-        display: none; /* 데이터 오기 전 숨김 */
+        display: none;
+      }
+      .weather {
+        color: #dddddd;
+      }
+      .aqi {
+        color: #aaaaaa;
       }
 
-      /* 로딩 및 상태 텍스트용 */
       .status {
         margin-top: 15px;
         font-size: 15px;
         color: #666666;
       }
 
-      .message {
-        position: absolute;
-        top: 15px;
-        width: 100vw;
-        text-align: center;
-        font-size: min(4vw, 18px);
-        color: #ffcc00; /* 황금빛 노란색 */
-        font-weight: 500;
-        opacity: 0.9;
-        cursor: pointer;
-      }
-
-      /* 언어 전환 버튼 (우하단 고정) */
-      .lang-btn {
+      /* 컨트롤 버튼 공통 (언어 & 잠금) */
+      .control-btn {
         position: fixed;
         bottom: 20px;
-        right: 20px;
         z-index: 1000;
         font-size: 24px;
         background: rgba(255, 255, 255, 0.1);
@@ -141,13 +117,20 @@
         justify-content: center;
         align-items: center;
         cursor: pointer;
+        color: white;
         transition: background 0.3s;
       }
-      .lang-btn:hover {
+      .control-btn:hover {
         background: rgba(255, 255, 255, 0.2);
       }
+      .lang-btn {
+        right: 20px;
+      }
+      .lock-btn {
+        left: 20px;
+      }
 
-      /* 지진 효과 애니메이션 */
+      /* 지진 효과 */
       @keyframes shake {
         0% { transform: translate(1px, 1px) rotate(0deg); }
         10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -161,22 +144,13 @@
         90% { transform: translate(1px, 2px) rotate(0deg); }
         100% { transform: translate(1px, -2px) rotate(-1deg); }
       }
-      @-webkit-keyframes shake {
-        0% { -webkit-transform: translate(1px, 1px) rotate(0deg); }
-        10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); }
-        20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); }
-        30% { -webkit-transform: translate(3px, 2px) rotate(0deg); }
-        40% { -webkit-transform: translate(1px, -1px) rotate(1deg); }
-        50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); }
-      }
       .earthquake {
         animation: shake 0.5s;
-        -webkit-animation: shake 0.5s;
       }
 
-      /* 숫자 패드 스타일 */
+      /* 숫자 패드 */
       .number-pad-container {
-        display: none; /* 기본 숨김 */
+        display: none;
         position: fixed;
         bottom: 0; left: 0; width: 100%; height: auto;
         top: auto;
@@ -218,65 +192,29 @@
       }
       .pad-btn:active { background: #444; }
       .pad-btn.action { font-size: 20px; border-color: #888; }
-      
-      /* 패드 열기 버튼 (좌하단) */
-      .lock-btn {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        z-index: 1000;
-        font-size: 24px;
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        color: white;
-        transition: background 0.3s;
-      }
-      .lock-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-      }
 
-      /* 가로 모드 (Landscape) 최적화 */
       @media (orientation: landscape) {
         .number-pad-container {
-          height: 100%;
-          top: 0;
-          bottom: auto;
-          border-radius: 0;
-          padding: 10px 0;
+          height: 100%; top: 0; bottom: auto;
+          border-radius: 0; padding: 10px 0;
         }
         .pad-display {
-          margin-bottom: 10px;
-          font-size: 30px;
-          height: 40px;
+          margin-bottom: 10px; font-size: 30px; height: 40px;
         }
         .pad-row {
-          gap: 20px;
-          margin-bottom: 10px;
+          gap: 20px; margin-bottom: 10px;
         }
         .pad-btn {
-          width: 50px; height: 50px;
-          font-size: 20px;
+          width: 50px; height: 50px; font-size: 20px;
         }
       }
 
-      /* 메인 콘텐츠 래퍼 (지진 효과 대상) */
       #main-content {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        width: 100%; height: 100%;
+        display: flex; flex-direction: column;
+        justify-content: center; align-items: center;
       }
 
-      /* 비밀번호 틀렸을 때 깜빡임 효과 */
       @keyframes pad-error-blink {
         0%, 100% { background: rgba(0, 0, 0, 0.95); }
         50% { background: rgba(255, 0, 0, 0.5); }
@@ -286,579 +224,412 @@
         25% { transform: translateX(-10px); }
         75% { transform: translateX(10px); }
       }
-      @-webkit-keyframes pad-shake {
-        0%, 100% { -webkit-transform: translateX(0); }
-        25% { -webkit-transform: translateX(-10px); }
-        75% { -webkit-transform: translateX(10px); }
-      }
       .pad-error {
         animation: pad-error-blink 0.3s ease-in-out, pad-shake 0.3s ease-in-out;
-        -webkit-animation: pad-error-blink 0.3s ease-in-out, pad-shake 0.3s ease-in-out;
       }
 
-      /* GIF 오버레이 스타일 */
-      #gifOverlay {
-        display: none;
-        position: fixed;
+      /* 오버레이 */
+      .overlay {
+        display: none; position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: #000;
-        z-index: 3000;
-        justify-content: center;
-        align-items: center;
+        justify-content: center; align-items: center;
+      }
+      #gifOverlay {
+        background: #000; z-index: 3000;
       }
       #gifOverlay img {
-        max-width: 100%;
-        max-height: 100%;
+        max-width: 100%; max-height: 100%;
       }
-
-      /* 무지개 방구 오버레이 스타일 */
       #fartOverlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 4000;
-        justify-content: center;
-        align-items: center;
-        font-size: 150px;
-        overflow: hidden;
+        background: rgba(0, 0, 0, 0.8); z-index: 4000;
+        font-size: 150px; overflow: hidden;
       }
       .rainbow-fart {
         display: inline-block;
         animation: fart-shake 0.1s infinite, rainbow-cycle 0.5s infinite linear;
-        -webkit-animation: fart-shake 0.1s infinite, rainbow-cycle 0.5s infinite linear;
       }
       @keyframes fart-shake {
-        0% { transform: translate(5px, 5px) scale(1); }
+        0%, 100% { transform: translate(5px, 5px) scale(1); }
         50% { transform: translate(-5px, -5px) scale(1.2); }
-        100% { transform: translate(5px, -5px) scale(1); }
-      }
-      @-webkit-keyframes fart-shake {
-        0% { -webkit-transform: translate(5px, 5px) scale(1); }
-        50% { -webkit-transform: translate(-5px, -5px) scale(1.2); }
-        100% { -webkit-transform: translate(5px, -5px) scale(1); }
       }
       @keyframes rainbow-cycle {
-        0% { filter: hue-rotate(0deg); -webkit-filter: hue-rotate(0deg); }
-        100% { filter: hue-rotate(360deg); -webkit-filter: hue-rotate(360deg); }
+        0% { filter: hue-rotate(0deg); }
+        100% { filter: hue-rotate(360deg); }
       }
     </style>
   </head>
   <body>
     <div id="main-content">
-    <!-- 상단 메시지 (누르면 랜덤 갱신) -->
-    <div class="message" onclick="updateQuote()" title="눌러보세요!"></div>
-    <div class="clock-container">
-      <!-- 시간 표시부 -->
-      <div
-        class="time"
-        style="cursor: pointer"
-      >
-        <span id="hours" title="누르면 12/24시간제 전환" onclick="toggleTimeFormat()">00</span><span class="blink">:</span
-        ><span id="minutes" title="누르면 폰트 크기 변경" onclick="toggleFontSize(event)">00</span
-        ><span class="seconds" id="seconds" title="누르면 폰트 변경" onclick="toggleFont(event)">00</span>
-      </div>
-      <!-- 날짜/날씨/미세먼지 한 줄 표시부 -->
-      <div class="info-row">
-        <!-- 날짜 표시부 -->
-        <div class="date" id="dateDisplay">2026년 01월 01일 (월)</div>
-      </div>
-      <div class="info-row">
-        <!-- 날씨 표시부 -->
-        <div class="weather" id="weatherDisplay"></div>
-        <!-- 미세먼지 표시부 -->
-        <div class="aqi" id="aqiDisplay"></div>
-      </div>
-      <div class="status" id="statusDisplay">로딩 중...</div>
+      <div class="clock-container">
+        <!-- 시간 표시부 -->
+        <div class="time" id="timeContainer">
+          <span id="hours" title="누르면 12/24시간제 전환">00</span>
+          <!-- <span class="blink">:</span> -->
+          <span id="minutes" title="누르면 폰트 크기 변경">00</span>
+          <span class="seconds" id="seconds" title="누르면 폰트 변경">00</span>
+        </div>
 
-      <!-- 화면 전환 아이콘 -->
-      <button
-        class="lang-btn"
-        onclick="toggleLang()"
-        title="한/영/숨김 모드 전환"
-      >
-        🌐
-      </button>
-      
-      <!-- 패드 열기 버튼 -->
-      <button class="lock-btn" onclick="togglePad(true)" title="비밀번호 입력">🔒</button>
-    </div>
+        <div class="info-row">
+          <div class="weather" id="weatherDisplay"></div>
+          <div class="aqi" id="aqiDisplay"></div>
+        </div>
+        <div class="status" id="statusDisplay">로딩 중...</div>
+
+        <!-- 컨트롤 버튼 -->
+        <button class="control-btn lang-btn" id="langBtn" title="한/영/숨김 모드 전환">🌐</button>
+        <button class="control-btn lock-btn" id="lockBtn" title="비밀번호 입력">🔒</button>
+      </div>
     </div>
 
-    <!-- 숫자 패드 오버레이 -->
+    <!-- 숫자 패드 -->
     <div class="number-pad-container" id="passwordPad">
       <div class="pad-display" id="padDisplay"></div>
       <div class="pad-row">
-        <div class="pad-btn" onclick="inputPad(1)">1</div>
-        <div class="pad-btn" onclick="inputPad(2)">2</div>
-        <div class="pad-btn" onclick="inputPad(3)">3</div>
+        <div class="pad-btn" data-num="1">1</div>
+        <div class="pad-btn" data-num="2">2</div>
+        <div class="pad-btn" data-num="3">3</div>
       </div>
       <div class="pad-row">
-        <div class="pad-btn" onclick="inputPad(4)">4</div>
-        <div class="pad-btn" onclick="inputPad(5)">5</div>
-        <div class="pad-btn" onclick="inputPad(6)">6</div>
+        <div class="pad-btn" data-num="4">4</div>
+        <div class="pad-btn" data-num="5">5</div>
+        <div class="pad-btn" data-num="6">6</div>
       </div>
       <div class="pad-row">
-        <div class="pad-btn" onclick="inputPad(7)">7</div>
-        <div class="pad-btn" onclick="inputPad(8)">8</div>
-        <div class="pad-btn" onclick="inputPad(9)">9</div>
+        <div class="pad-btn" data-num="7">7</div>
+        <div class="pad-btn" data-num="8">8</div>
+        <div class="pad-btn" data-num="9">9</div>
       </div>
       <div class="pad-row">
-        <div class="pad-btn action" onclick="clearPad()">C</div>
-        <div class="pad-btn" onclick="inputPad(0)">0</div>
-        <div class="pad-btn action" onclick="submitPad()">OK</div>
+        <div class="pad-btn action" id="padClear">C</div>
+        <div class="pad-btn" data-num="0">0</div>
+        <div class="pad-btn action" id="padSubmit">OK</div>
       </div>
-      <div class="pad-btn action" style="margin-top: 20px; border: none; font-size: 16px; width: auto; height: auto;" onclick="togglePad(false)">닫기</div>
+      <div class="pad-btn action" id="padClose" style="margin-top: 20px; border: none; font-size: 16px; width: auto; height: auto;">닫기</div>
     </div>
 
-    <!-- GIF 표시용 오버레이 -->
-    <div id="gifOverlay">
-      <img src="0.0.gif" alt="Special Event">
+    <!-- 오버레이 및 미디어 -->
+    <div class="overlay" id="gifOverlay">
+      <img src="0.0.gif" alt="Special Event" />
     </div>
-
-    <!-- 무지개 방구 오버레이 -->
-    <div id="fartOverlay">
+    <div class="overlay" id="fartOverlay">
       <div class="rainbow-fart">🌈💨</div>
     </div>
-
-    <!-- 효과음 재생용 오디오 -->
     <audio id="successSound" src="success.mp3" preload="auto"></audio>
 
     <script>
-      // 0: 한글, 1: 영문, 2: 안보임
-      var langMode = 0;
-      var is12Hour = true; // true: 12시간제, false: 24시간제
-      var weatherData = null;
-      var aqiData = null;
+      // =========================================================
+      // 설정 및 상태 (State & Config)
+      // =========================================================
+      const AppState = {
+        langMode: 0, // 0: 한글, 1: 영문, 2: 안보임
+        is12Hour: true,
+        currentFontIndex: 0,
+        currentSizeIndex: 0,
+        weatherData: null,
+        aqiData: null,
+        currentPassword: ""
+      };
 
-      function renderWeather() {
-        var el = document.getElementById("weatherDisplay");
-        var statusEl = document.getElementById("statusDisplay");
+      const Config = {
+        fonts: [
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+          '"Orbitron", sans-serif',
+          '"VT323", monospace',
+          '"Anton", sans-serif',
+          '"Nunito", sans-serif',
+          '"Caveat", cursive',
+          '"Playfair Display", serif',
+          '"Space Mono", monospace'
+        ],
+        sizes: [
+          'min(30vw, 45vh, 200px)',
+          
+          'min(20vw, 30vh, 150px)',
+          'min(25vw, 38vh, 180px)'
+        ],
+        timeColors: [
+          "#FF80AB", "#EA80FC", "#8C9EFF", "#80D8FF",
+          "#A7FFEB", "#CCFF90", "#FFFF8D", "#FFD180"
+        ]
+      };
 
-        if (langMode === 2) {
-          el.style.display = "none";
-          statusEl.textContent = "";
+      // =========================================================
+      // DOM 엘리먼트 (DOM Elements)
+      // =========================================================
+      const DOM = {
+        timeContainer: document.getElementById('timeContainer'),
+        hours: document.getElementById('hours'),
+        minutes: document.getElementById('minutes'),
+        seconds: document.getElementById('seconds'),
+        weatherDisplay: document.getElementById('weatherDisplay'),
+        aqiDisplay: document.getElementById('aqiDisplay'),
+        statusDisplay: document.getElementById('statusDisplay'),
+        mainContent: document.getElementById('main-content'),
+        passwordPad: document.getElementById('passwordPad'),
+        padDisplay: document.getElementById('padDisplay'),
+        gifOverlay: document.getElementById('gifOverlay'),
+        fartOverlay: document.getElementById('fartOverlay'),
+        successSound: document.getElementById('successSound')
+      };
+
+      // =========================================================
+      // 시계 로직 (Clock Logic)
+      // =========================================================
+      const updateClock = () => {
+        const now = new Date();
+        let h = now.getHours();
+        let m = now.getMinutes();
+        let s = now.getSeconds();
+
+        // 1초마다 색상 변경
+        DOM.timeContainer.style.color = Config.timeColors[s % Config.timeColors.length];
+
+        // 12시간제 처리
+        if (AppState.is12Hour) {
+          h = h % 12 || 12;
+        }
+
+        // DOM 업데이트 (2자리 포맷팅)
+        DOM.hours.textContent = h.toString().padStart(2, '0');
+        DOM.minutes.textContent = m.toString().padStart(2, '0');
+        DOM.seconds.textContent = s.toString().padStart(2, '0');
+
+        // 10초마다 지진 효과
+        if (s % 10 === 0) {
+          DOM.mainContent.classList.add('earthquake');
+          setTimeout(() => DOM.mainContent.classList.remove('earthquake'), 500);
+        }
+      };
+
+      const startClock = () => {
+        updateClock();
+        const msToNextSecond = 1000 - new Date().getMilliseconds();
+        setTimeout(startClock, msToNextSecond);
+      };
+
+      // =========================================================
+      // 날씨 및 미세먼지 API 로직 (API Fetching)
+      // =========================================================
+      const getWeatherIcon = (wmoCode) => {
+        if (wmoCode === 0) return "☀️";
+        if (wmoCode <= 3) return "⛅";
+        if ([45, 48].includes(wmoCode)) return "🌫️";
+        if (wmoCode >= 51 && wmoCode <= 67) return "🌧️";
+        if (wmoCode >= 71 && wmoCode <= 77) return "❄️";
+        if (wmoCode >= 80 && wmoCode <= 82) return "🌦️";
+        if (wmoCode >= 85 && wmoCode <= 86) return "🌨️";
+        if (wmoCode >= 95 && wmoCode <= 99) return "⛈️";
+        return "☁️";
+      };
+
+      const renderWeather = () => {
+        if (AppState.langMode === 2) {
+          DOM.weatherDisplay.style.display = "none";
+          DOM.statusDisplay.textContent = "";
+          return;
+        }
+        if (!AppState.weatherData) {
+          DOM.statusDisplay.textContent = AppState.langMode === 0 ? "날씨 정보를 읽어오는 중..." : "Loading weather...";
+          DOM.weatherDisplay.style.display = "none";
+          return;
+        }
+        if (AppState.weatherData.error) {
+          DOM.statusDisplay.textContent = AppState.langMode === 0 ? AppState.weatherData.error.ko : AppState.weatherData.error.en;
+          DOM.weatherDisplay.style.display = "none";
           return;
         }
 
-        if (!weatherData) {
-          statusEl.textContent =
-            langMode === 0
-              ? "날씨 정보를 읽어오는 중..."
-              : "Loading weather...";
-          el.style.display = "none";
+        const { icon, temp } = AppState.weatherData.current;
+        DOM.weatherDisplay.textContent = `${icon} ${temp}°C `;
+        DOM.weatherDisplay.style.display = "block";
+        DOM.statusDisplay.textContent = "";
+      };
+
+      const fetchWeather = async (lat, lon) => {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&past_days=1&forecast_days=2`;
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("HTTP Error");
+          const response = await res.json();
+          AppState.weatherData = {
+            current: {
+              icon: getWeatherIcon(response.current_weather.weathercode),
+              temp: response.current_weather.temperature
+            }
+          };
+        } catch (e) {
+          AppState.weatherData = { error: { ko: "날씨 오류", en: "Weather Error" } };
+        }
+        renderWeather();
+      };
+
+      const updateWeather = () => {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+            (err) => {
+              console.error("위치 에러:", err);
+              AppState.weatherData = { error: { ko: "위치 권한 필요", en: "Location required" } };
+              renderWeather();
+            }
+          );
+        } else {
+          AppState.weatherData = { error: { ko: "위치 미지원 기기", en: "Location not supported" } };
+          renderWeather();
+        }
+      };
+
+      const renderAQI = () => {
+        if (AppState.langMode === 2) {
+          DOM.aqiDisplay.style.display = "none";
           return;
         }
-        if (weatherData.error) {
-          statusEl.textContent =
-            langMode === 0 ? weatherData.error.ko : weatherData.error.en;
-          el.style.display = "none";
-          return;
-        }
-
-        el.textContent =
-          weatherData.current.icon + " " + weatherData.current.temp + "°C ";
-
-        el.style.display = "block";
-        statusEl.textContent = "";
-      }
-
-      function renderAQI() {
-        var el = document.getElementById("aqiDisplay");
-        var statusEl = document.getElementById("statusDisplay");
-
-        if (langMode === 2) {
-          el.style.display = "none";
-          statusEl.textContent = "";
-          return;
-        }
-
-        if (!aqiData) {
-          if (!statusEl.textContent || statusEl.textContent === "") {
-            statusEl.textContent =
-              langMode === 0
-                ? "미세먼지 정보를 읽어오는 중..."
-                : "Loading AQI...";
+        if (!AppState.aqiData) {
+          if (!DOM.statusDisplay.textContent) {
+            DOM.statusDisplay.textContent = AppState.langMode === 0 ? "미세먼지 정보를 읽어오는 중..." : "Loading AQI...";
           }
-          el.style.display = "none";
+          DOM.aqiDisplay.style.display = "none";
           return;
         }
-        if (aqiData.error) {
-          statusEl.textContent =
-            langMode === 0 ? aqiData.error.ko : aqiData.error.en;
-          el.style.display = "none";
+        if (AppState.aqiData.error) {
+          DOM.statusDisplay.textContent = AppState.langMode === 0 ? AppState.aqiData.error.ko : AppState.aqiData.error.en;
+          DOM.aqiDisplay.style.display = "none";
           return;
         }
-        var aqiIcon = "😄";
-        if (aqiData.todayMax > 40) aqiIcon = "😷";
-        if (aqiData.todayMax > 80) aqiIcon = "🤢";
-        if (aqiData.todayMax > 100) aqiIcon = "👿";
-        el.textContent =
-          "PM2.5 😷 " +
-          aqiData.current +
-          " " +
-          aqiIcon +
-          " " +
-          aqiData.todayMax;
-        el.style.display = "block";
-        statusEl.textContent = "";
-      }
 
-      function toggleLang() {
-        langMode = (langMode + 1) % 3;
+        const { current, todayMax } = AppState.aqiData;
+        let aqiIcon = "😄";
+        if (todayMax > 40) aqiIcon = "😷";
+        if (todayMax > 80) aqiIcon = "🤢";
+        if (todayMax > 100) aqiIcon = "👿";
+
+        DOM.aqiDisplay.textContent = `PM2.5 😷 ${current} ${aqiIcon} ${todayMax}`;
+        DOM.aqiDisplay.style.display = "block";
+        DOM.statusDisplay.textContent = "";
+      };
+
+      const updateAQI = async () => {
+        const token = "c1611aa54ac7de2320cc3105b7b42a0ba2b26447";
+        const url = `https://api.waqi.info/feed/here/?token=${token}`;
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("HTTP Error");
+          const response = await res.json();
+          if (response.status === "ok") {
+            let todayMax = "-";
+            if (response.data.forecast?.daily?.pm25) {
+              const todayStr = new Date().toISOString().split('T')[0];
+              const forecast = response.data.forecast.daily.pm25.find(f => f.day === todayStr);
+              if (forecast) todayMax = forecast.max;
+            }
+            AppState.aqiData = { current: response.data.aqi, todayMax };
+          }
+        } catch (e) {
+          AppState.aqiData = { error: { ko: "미세먼지 오류", en: "AQI Error" } };
+        }
+        renderAQI();
+      };
+
+      // =========================================================
+      // 숫자 패드 로직 (Number Pad Logic)
+      // =========================================================
+      const togglePad = (show) => {
+        DOM.passwordPad.style.display = show ? 'flex' : 'none';
+        if (show) {
+          AppState.currentPassword = "";
+          updatePadDisplay();
+        }
+      };
+
+      const updatePadDisplay = () => {
+        DOM.padDisplay.textContent = "•".repeat(AppState.currentPassword.length);
+      };
+
+      const inputPad = (num) => {
+        if (AppState.currentPassword.length < 4) {
+          AppState.currentPassword += num;
+          updatePadDisplay();
+          if (AppState.currentPassword.length === 4) submitPad();
+        }
+      };
+
+      const clearPad = () => {
+        AppState.currentPassword = "";
+        updatePadDisplay();
+      };
+
+      const submitPad = () => {
+        if (AppState.currentPassword === "1402") {
+          DOM.gifOverlay.style.display = 'flex';
+          if (DOM.successSound) {
+            DOM.successSound.currentTime = 0;
+            DOM.successSound.play().catch(e => console.log('Audio error:', e));
+          }
+          togglePad(false);
+          setTimeout(() => DOM.gifOverlay.style.display = 'none', 5000);
+        } else {
+          DOM.passwordPad.classList.add('pad-error');
+          DOM.fartOverlay.style.display = 'flex';
+          
+          setTimeout(() => {
+            DOM.passwordPad.classList.remove('pad-error');
+            DOM.fartOverlay.style.display = 'none';
+          }, 1500); 
+          clearPad();
+        }
+      };
+
+      // =========================================================
+      // 이벤트 리스너 및 초기화 (Events & Init)
+      // =========================================================
+      
+      // 시계 포맷
+      DOM.hours.addEventListener('click', (e) => {
+        e.stopPropagation();
+        AppState.is12Hour = !AppState.is12Hour;
+        updateClock();
+      });
+
+      // 폰트 크기
+      DOM.minutes.addEventListener('click', (e) => {
+        e.stopPropagation();
+        AppState.currentSizeIndex = (AppState.currentSizeIndex + 1) % Config.sizes.length;
+        DOM.timeContainer.style.fontSize = Config.sizes[AppState.currentSizeIndex];
+      });
+
+      // 폰트 종류
+      DOM.seconds.addEventListener('click', (e) => {
+        e.stopPropagation();
+        AppState.currentFontIndex = (AppState.currentFontIndex + 1) % Config.fonts.length;
+        DOM.timeContainer.style.fontFamily = Config.fonts[AppState.currentFontIndex];
+      });
+
+      // 언어/숨김 전환
+      document.getElementById('langBtn').addEventListener('click', () => {
+        AppState.langMode = (AppState.langMode + 1) % 3;
         updateClock();
         renderWeather();
         renderAQI();
-        updateQuote();
-      }
+      });
 
-      var fontList = [
-        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-        'Georgia, serif',
-        '"Courier New", Courier, monospace',
-        '"Comic Sans MS", "Chalkboard SE", "Comic Neue", sans-serif',
-        'Impact, fantasy',
-        '"Times New Roman", Times, serif',
-        'Arial, Helvetica, sans-serif',
-        'Tahoma, Geneva, sans-serif',
-        '"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif',
-        'Verdana, Geneva, Tahoma, sans-serif'
-      ];
-      var currentFontIndex = 0;
+      // 숫자 패드 표시
+      document.getElementById('lockBtn').addEventListener('click', () => togglePad(true));
+      
+      // 숫자 패드 키보드 처리
+      document.querySelectorAll('.pad-btn[data-num]').forEach(btn => {
+        btn.addEventListener('click', (e) => inputPad(e.target.dataset.num));
+      });
+      document.getElementById('padClear').addEventListener('click', clearPad);
+      document.getElementById('padSubmit').addEventListener('click', submitPad);
+      document.getElementById('padClose').addEventListener('click', () => togglePad(false));
 
-      function toggleFont(event) {
-        if(event) event.stopPropagation();
-        currentFontIndex = (currentFontIndex + 1) % fontList.length;
-        document.querySelector('.time').style.fontFamily = fontList[currentFontIndex];
-      }
-
-      var sizeList = [
-        'min(30vw, 200px)', // 기본 크기
-        'min(35vw, 240px)', // 약간 큼
-        'min(40vw, 280px)', // 더 큼
-        'min(20vw, 150px)', // 작음
-        'min(25vw, 180px)'  // 약간 작음
-      ];
-      var currentSizeIndex = 0;
-
-      function toggleFontSize(event) {
-        if(event) event.stopPropagation();
-        currentSizeIndex = (currentSizeIndex + 1) % sizeList.length;
-        document.querySelector('.time').style.fontSize = sizeList[currentSizeIndex];
-      }
-
-      function toggleTimeFormat() {
-        is12Hour = !is12Hour;
-        updateClock();
-      }
-
-      function updateClock() {
-        var now = new Date();
-
-        // 시간 추출
-        var h = now.getHours();
-        var m = now.getMinutes();
-        var s = now.getSeconds();
-
-        // 매 초마다 색상 변경 (밝은 색 계열)
-        var colors = [
-          "#FF80AB",
-          "#EA80FC",
-          "#8C9EFF",
-          "#80D8FF",
-          "#A7FFEB",
-          "#CCFF90",
-          "#FFFF8D",
-          "#FFD180",
-        ];
-        document.getElementsByClassName("time")[0].style.color =
-          colors[s % colors.length];
-
-        // 2자리 숫자로 포맷
-        if (is12Hour) {
-          h = h % 12;
-          if (h === 0) {
-            h = 12; // 0시는 12시로 표시
-          }
-        }
-
-        h = h < 10 ? "0" + h : h;
-        m = m < 10 ? "0" + m : m;
-        s = s < 10 ? "0" + s : s;
-
-        // 10초마다 지진 효과 (sec % 10 === 0 일 때)
-        if (now.getSeconds() % 10 === 0) {
-          var content = document.getElementById('main-content');
-          content.classList.add('earthquake');
-          setTimeout(function() {
-            content.classList.remove('earthquake');
-          }, 500);
-        }
-
-        // DOM 업데이트 (깜빡임 문제 없이 텍스트 노드만 변경)
-        document.getElementById("hours").textContent = h;
-        document.getElementById("minutes").textContent = m;
-        document.getElementById("seconds").textContent = s;
-
-        // 날짜 포맷팅
-        var year = now.getFullYear();
-        var month = now.getMonth() + 1;
-        var date = now.getDate();
-        var dayIndex = now.getDay();
-
-        // 영어 기준 요일 아이콘
-        var dayNames = [
-          "일요일",
-          "월요일",
-          "화요일",
-          "수요일",
-          "목요일",
-          "금요일",
-          "토요일",
-        ];
-        var dayNames_en = [
-          "Sunday",
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ];
-
-        // 3모드 (안보임) 일때 날짜 영역 숨기기
-        var dateDisplayEl = document.getElementById("dateDisplay");
-        if (langMode === 2) {
-          dateDisplayEl.style.display = "none";
-          return; // 날짜 업데이트 조기 종료
-        } else {
-          dateDisplayEl.style.display = "block";
-        }
-
-        // 요일 색상 구하기 (일요일: 밝은 빨강, 토요일: 밝은 파랑, 평일: 초록)
-        var dayColor = "#52ff52";
-        if (dayIndex === 0) {
-          dayColor = "#ff5252";
-        } else if (dayIndex === 6) {
-          dayColor = "#4da8da";
-        }
-
-        // 전체 글자색 설정 초기화
-        dateDisplayEl.style.color = "";
-
-        if (langMode === 0) {
-          var dayName = dayNames[dayIndex];
-          // 0 채우기
-          month = month < 10 ? "0" + month : month;
-          date = date < 10 ? "0" + date : date;
-
-          dateDisplayEl.innerHTML =
-            "<span style='cursor:pointer;' title='누르면 새로고침' onclick='location.reload()'>" + year + "</span>" +
-            "년 " +
-            month +
-            "월 " +
-            date +
-            "일 <span style='color:" +
-            dayColor +
-            "'>" +
-            dayName +
-            "</span>";
-        } else if (langMode === 1) {
-          var dayNameEn = dayNames_en[dayIndex];
-          var monthNamesEn = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-          ];
-          var mEn = monthNamesEn[now.getMonth()];
-
-          dateDisplayEl.innerHTML =
-            "<span style='color:" +
-            dayColor +
-            "'>" +
-            dayNameEn +
-            "</span>, " +
-            mEn +
-            " " +
-            now.getDate() +
-            ", " +
-            "<span style='cursor:pointer;' title='Click to refresh' onclick='location.reload()'>" + year + "</span>";
-        }
-      }
-
-      function startClock() {
-        updateClock();
-        // 브라우저 딜레이를 방지하기 위해 다음 정확한 1초(0밀리초)가 되는 순간을 계산하여 예약
-        var now = new Date();
-        var msToNextSecond = 1000 - now.getMilliseconds();
-        setTimeout(startClock, msToNextSecond);
-      }
-
-      // 시계 구동 시작
-      startClock();
-
-      // --------------------------------------------------
-      // 현재 위치 기반 날씨 가져오기 (Open-Meteo API 사용)
-      // --------------------------------------------------
-      function getWeatherIcon(wmoCode) {
-        // WMO 날씨 코드(0~99)에 따라 이모지 반환
-        // 참고: https://open-meteo.com/en/docs
-        if (wmoCode === 0) return "☀️"; // 맑음
-        if (wmoCode === 1 || wmoCode === 2 || wmoCode === 3) return "⛅"; // 구름 조금~흐림
-        if (wmoCode === 45 || wmoCode === 48) return "🌫️"; // 안개
-        if (wmoCode >= 51 && wmoCode <= 67) return "🌧️"; // 비
-        if (wmoCode >= 71 && wmoCode <= 77) return "❄️"; // 눈
-        if (wmoCode >= 80 && wmoCode <= 82) return "🌦️"; // 소나기
-        if (wmoCode >= 85 && wmoCode <= 86) return "🌨️"; // 눈보라
-        if (wmoCode >= 95 && wmoCode <= 99) return "⛈️"; // 뇌우
-        return "☁️"; // 기본값
-      }
-
-      function fetchWeather(lat, lon) {
-        var url =
-          "https://api.open-meteo.com/v1/forecast?latitude=" +
-          lat +
-          "&longitude=" +
-          lon +
-          "&current_weather=true" +
-          "&daily=weathercode,temperature_2m_max,temperature_2m_min" +
-          "&timezone=auto" +
-          "&past_days=1" +
-          "&forecast_days=2";
-
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", url, true);
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4 && xhr.status === 200) {
-            try {
-              var response = JSON.parse(xhr.responseText);
-              var temp = response.current_weather.temperature;
-              var code = response.current_weather.weathercode;
-              var icon = getWeatherIcon(code);
-
-              var yMax = Math.round(response.daily.temperature_2m_max[0]);
-              var yIcon = getWeatherIcon(response.daily.weathercode[0]);
-
-              var tMax = Math.round(response.daily.temperature_2m_max[2]);
-              var tIcon = getWeatherIcon(response.daily.weathercode[2]);
-
-              weatherData = {
-                current: { icon: icon, temp: temp },
-                yesterday: { icon: yIcon, max: yMax },
-                tomorrow: { icon: tIcon, max: tMax },
-              };
-              renderWeather();
-            } catch (e) {
-              weatherData = { error: { ko: "날씨 오류", en: "Weather Error" } };
-              renderWeather();
-            }
-          } else if (xhr.readyState === 4) {
-            weatherData = {
-              error: {
-                ko: "날씨를 불러올 수 없습니다.",
-                en: "Cannot load weather.",
-              },
-            };
-            renderWeather();
-          }
-        };
-        xhr.send();
-      }
-
-      function updateQuote() {
-        var messageEl = document.querySelector(".message");
-        if (langMode === 2) {
-          messageEl.style.display = "none";
-          return;
-        }
-
-        var titles = [
-          "최고의 예쁜이는 ",
-          "최고의 스플래툰 유저는 ",
-          "최고의 못난이는 ",
-          "최고의 요리사는 ",
-          "최고의 방귀 대장은 ",
-          "최고의 똥쟁이는 ",
-          "세계 최고의 잠꾸러기는 ",
-        ];
-        var names = [
-          "당신 입니다!",
-          "당신 빼고 모두 입니다!",
-          "윤은솔 입니다!",
-          "윤은솔 입니다!",
-          "이민정 입니다!",
-          "윤여정 입니다!",
-          "우리 모두 입니다!",
-        ];
-
-        // 매 호출마다 완전 랜덤으로 뽑기
-        var randTitle = titles[Math.floor(Math.random() * titles.length)];
-        var randName = names[Math.floor(Math.random() * names.length)];
-
-        var randomString = randTitle + randName;
-
-        messageEl.style.display = "block";
-        messageEl.textContent = randomString;
-      }
-
-      function updateWeather() {
-        if ("geolocation" in navigator) {
-          navigator.geolocation.getCurrentPosition(
-            function (position) {
-              var lat = position.coords.latitude;
-              var lon = position.coords.longitude;
-              fetchWeather(lat, lon);
-            },
-            function (error) {
-              console.error("위치 정보 거부됨 또는 에러:", error);
-              weatherData = {
-                error: {
-                  ko: "위치 정보 접근 권한이 필요합니다.",
-                  en: "Location access required.",
-                },
-              };
-              renderWeather();
-            },
-          );
-        } else {
-          weatherData = {
-            error: {
-              ko: "위치 정보가 지원되지 않는 기기입니다.",
-              en: "Location not supported.",
-            },
-          };
-          renderWeather();
-        }
-      }
-
-      // 페이지 진입 시 날씨/미세먼지/운세 1회 업데이트 및 30분마다 갱신
-      updateWeather();
-      updateAQI();
-      updateQuote();
-      setInterval(function () {
-        updateWeather();
-        updateAQI();
-        updateQuote();
-      }, 1800000);
-      // 구버전 및 미지원 브라우저는 자연히 무시
-      // --------------------------------------------------
-      var wakeLock = null;
-      async function requestWakeLock() {
+      // Wake Lock 설정
+      let wakeLock = null;
+      const requestWakeLock = async () => {
         if ("wakeLock" in navigator) {
           try {
             wakeLock = await navigator.wakeLock.request("screen");
-
-            // 화면/탭 변경 후 돌아올 때 Lock이 풀리는 것 방지
-            document.addEventListener("visibilitychange", async function () {
+            document.addEventListener("visibilitychange", async () => {
               if (wakeLock !== null && document.visibilityState === "visible") {
                 wakeLock = await navigator.wakeLock.request("screen");
               }
@@ -867,144 +638,22 @@
             console.log("Wake Lock Error:", err);
           }
         }
-      }
-      // 미세먼지
-      function updateAQI() {
-        var token = "c1611aa54ac7de2320cc3105b7b42a0ba2b26447";
-        // 'here'는 IP 기반으로 현재 위치를 자동으로 찾습니다.
-        var url = "https://api.waqi.info/feed/here/?token=" + token;
+      };
 
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", url, true);
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4 && xhr.status === 200) {
-            try {
-              var response = JSON.parse(xhr.responseText);
-              if (response.status === "ok") {
-                var currentAqi = response.data.aqi;
-                var todayMax = "-";
-                var tomorrowMax = "-";
+      // 앱 초기 구동
+      const initApp = () => {
+        startClock();
+        requestWakeLock();
+        updateWeather();
+        updateAQI();
+        // 30분마다 날씨/미세먼지 갱신
+        setInterval(() => {
+          updateWeather();
+          updateAQI();
+        }, 1800000);
+      };
 
-                // 오늘 예보 (최고) 가져오기
-                if (
-                  response.data.forecast &&
-                  response.data.forecast.daily &&
-                  response.data.forecast.daily.pm25
-                ) {
-                  var forecasts = response.data.forecast.daily.pm25;
-                  var now = new Date();
-                  var year = now.getFullYear();
-                  var month = now.getMonth() + 1;
-                  var day = now.getDate();
-                  if (month < 10) month = "0" + month;
-                  if (day < 10) day = "0" + day;
-                  var todayStr = year + "-" + month + "-" + day;
-
-                  var tomorrow = new Date(now);
-                  tomorrow.setDate(tomorrow.getDate() + 1);
-                  var tYear = tomorrow.getFullYear();
-                  var tMonth = tomorrow.getMonth() + 1;
-                  var tDay = tomorrow.getDate();
-                  if (tMonth < 10) tMonth = "0" + tMonth;
-                  if (tDay < 10) tDay = "0" + tDay;
-                  var tomorrowStr = tYear + "-" + tMonth + "-" + tDay;
-
-                  for (var i = 0; i < forecasts.length; i++) {
-                    if (forecasts[i].day === todayStr) {
-                      todayMax = forecasts[i].max;
-                    }
-                    if (forecasts[i].day === tomorrowStr) {
-                      tomorrowMax = forecasts[i].max;
-                    }
-                  }
-                }
-
-                aqiData = {
-                  current: currentAqi,
-                  todayMax: todayMax,
-                  tomorrowMax: tomorrowMax,
-                };
-                renderAQI();
-              }
-            } catch (e) {
-              console.log("AQI Error:", e);
-              aqiData = { error: { ko: "미세먼지 오류", en: "AQI Error" } };
-              renderAQI();
-            }
-          } else if (xhr.readyState === 4) {
-            aqiData = {
-              error: {
-                ko: "미세먼지를 불러올 수 없습니다.",
-                en: "Cannot load AQI.",
-              },
-            };
-            renderAQI();
-          }
-        };
-        xhr.send();
-      }
-
-      // --- 숫자 패드 로직 ---
-      var currentPassword = "";
-      function togglePad(show) {
-        var pad = document.getElementById('passwordPad');
-        pad.style.display = show ? 'flex' : 'none';
-        if(show) {
-          currentPassword = "";
-          updatePadDisplay();
-        }
-      }
-      function inputPad(num) {
-        if(currentPassword.length < 4) {
-          currentPassword += num;
-          updatePadDisplay();
-          
-          // 4자리가 입력되면 자동으로 제출
-          if(currentPassword.length === 4) {
-            submitPad();
-          }
-        }
-      }
-      function clearPad() {
-        currentPassword = "";
-        updatePadDisplay();
-      }
-      function updatePadDisplay() {
-        var el = document.getElementById('padDisplay');
-        var str = "";
-        for(var i=0; i<currentPassword.length; i++) str += "•";
-        el.textContent = str;
-      }
-      function submitPad() {
-        if (currentPassword === "1402") {
-          var gifOverlay = document.getElementById('gifOverlay');
-          var sound = document.getElementById('successSound');
-          
-          gifOverlay.style.display = 'flex';
-          if (sound) {
-            sound.currentTime = 0; // 재생 위치 초기화
-            sound.play();
-          }
-          togglePad(false);
-          
-          setTimeout(function() {
-            gifOverlay.style.display = 'none';
-          }, 5000);
-        } else {
-          var pad = document.getElementById('passwordPad');
-          var fartOverlay = document.getElementById('fartOverlay');
-          
-          pad.classList.add('pad-error');
-          fartOverlay.style.display = 'flex';
-          
-          setTimeout(function() {
-            pad.classList.remove('pad-error');
-            fartOverlay.style.display = 'none';
-          }, 1500); 
-          
-          clearPad();
-        }
-      }
+      window.addEventListener('DOMContentLoaded', initApp);
     </script>
   </body>
 </html>
