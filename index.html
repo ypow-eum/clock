@@ -77,6 +77,9 @@
         color: #888888;
         margin-left: 15px;
         display: inline-block;
+        width: 1.6em;
+        text-align: left;
+        box-sizing: content-box;
         padding-right: 15px;
         padding-bottom: 5px;
       }
@@ -329,10 +332,10 @@
           '"Anton", sans-serif',
           '"Nunito", sans-serif',
           '"Caveat", cursive',
-          '"Playfair Display", serif',
-          '"Space Mono", monospace'
+          '"Playfair Display", serif'
         ],
         sizes: [
+          'min(45vw, 55vh, 300px)',
           'min(40vw, 50vh, 270px)',
           'min(35vw, 45vh, 240px)',
           'min(30vw, 40vh, 210px)',
@@ -491,7 +494,7 @@
         if (todayMax > 80) aqiIcon = "🤢";
         if (todayMax > 100) aqiIcon = "👿";
 
-        DOM.aqiDisplay.textContent = `PM2.5 😷 ${current} ${aqiIcon} ${todayMax}`;
+        DOM.aqiDisplay.textContent = `😷 ${current} ${aqiIcon} ${todayMax}`;
         DOM.aqiDisplay.style.display = "block";
         DOM.statusDisplay.textContent = "";
       };
